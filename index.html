@@ -418,6 +418,61 @@
 
     .toast.show { opacity: 1; }
 
+    .cookie-banner {
+      position: fixed;
+      left: 18px;
+      right: 18px;
+      bottom: 18px;
+      z-index: 30;
+      display: none;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 14px;
+      align-items: center;
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 14px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .cookie-banner.show { display: grid; }
+
+    .cookie-banner p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .storage-state {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      padding: 4px 9px;
+      border-radius: 999px;
+      background: var(--wash);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .storage-state.on {
+      background: #e4f4ec;
+      color: var(--green);
+    }
+
+    .privacy-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 0;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      margin: 14px 0;
+    }
+
     @media (max-width: 1180px) {
       .reader-grid { grid-template-columns: 240px minmax(0, 1fr); }
       .reader-grid > .panel:last-child { grid-column: 1 / -1; }
@@ -441,6 +496,9 @@
       .book-scroll { max-height: 320px; }
       .reader-head { align-items: flex-start; flex-direction: column; }
       .tools { justify-content: flex-start; }
+      .cookie-banner {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
@@ -586,7 +644,14 @@
           <div class="panel">
             <div class="panel-head"><h2>Gegevens</h2></div>
             <div class="panel-body">
-              <p class="muted">Alles wordt lokaal in deze browser opgeslagen: hoofdstukcache, highlights, notities en zoekindex.</p>
+              <p class="muted" id="storageDescription">Luminary kan highlights, notities, geladen hoofdstukken en de zoekindex lokaal in deze browser bewaren.</p>
+              <div class="privacy-row">
+                <div>
+                  <strong>Lokale opslag</strong>
+                  <div class="small muted">Sta toe dat Luminary gegevens in deze browser bewaart.</div>
+                </div>
+                <button class="secondary" id="storageToggle">Opslag aanpassen</button>
+              </div>
               <div class="actions">
                 <button class="secondary" id="exportBtn">Exporteren</button>
                 <label class="secondary" for="importFile">Importeren</label>
@@ -601,6 +666,16 @@
   </div>
 
   <div class="toast" id="toast"></div>
+  <div class="cookie-banner" id="cookieBanner" role="dialog" aria-live="polite" aria-label="Lokale opslag toestemming">
+    <div>
+      <strong>Lokale opslag voor jouw Bijbelstudie?</strong>
+      <p>Met toestemming bewaart Luminary highlights, notities en geladen hoofdstukken in deze browser. Zonder toestemming werkt de site nog steeds, maar niets blijft bewaard na verversen of sluiten.</p>
+    </div>
+    <div class="actions">
+      <button class="secondary" id="denyStorage">Weigeren</button>
+      <button class="primary" id="allowStorage">Toestaan</button>
+    </div>
+  </div>
 
   <script>
     const BOOKS = [
@@ -648,8 +723,27 @@
       { ref: "Romans 8:28", book: "Romans", chapter: 8, verse: 28, text: "And we know that all things work together for good to them that love God..." }
     ];
 
+    const STORAGE_KEYS = ["book", "chapter", "highlights", "notes", "chapters", "searchIndex"];
+
+    function getCookie(name) {
+      return document.cookie
+        .split("; ")
+        .find((row) => row.startsWith(`${name}=`))
+        ?.split("=")[1] || "";
+    }
+
+    function setCookie(name, value) {
+      const maxAge = 60 * 60 * 24 * 180;
+      document.cookie = `${name}=${value}; max-age=${maxAge}; path=/; SameSite=Lax`;
+    }
+
+    function storageAllowed() {
+      return getCookie("luminary_storage") === "allow";
+    }
+
     const store = {
       get(key, fallback) {
+        if (!storageAllowed()) return fallback;
         try {
           const raw = localStorage.getItem("luminary_" + key);
           return raw ? JSON.parse(raw) : fallback;
@@ -658,6 +752,7 @@
         }
       },
       set(key, value) {
+        if (!storageAllowed()) return;
         localStorage.setItem("luminary_" + key, JSON.stringify(value));
       },
       remove(key) {
@@ -693,6 +788,53 @@
       store.set("notes", state.notes);
       store.set("chapters", state.chapters);
       store.set("searchIndex", state.searchIndex);
+    }
+
+    function clearStoredStudyData() {
+      STORAGE_KEYS.forEach((key) => store.remove(key));
+    }
+
+    function persistCurrentState() {
+      store.set("book", state.book);
+      store.set("chapter", state.chapter);
+      store.set("highlights", state.highlights);
+      store.set("notes", state.notes);
+      store.set("chapters", state.chapters);
+      store.set("searchIndex", state.searchIndex);
+    }
+
+    function setStorageConsent(allowed) {
+      setCookie("luminary_storage", allowed ? "allow" : "deny");
+      if (allowed) {
+        persistCurrentState();
+        toast("Lokale opslag toegestaan");
+      } else {
+        clearStoredStudyData();
+        toast("Lokale opslag uitgeschakeld");
+      }
+      updateStorageUi();
+    }
+
+    function updateStorageUi() {
+      const allowed = storageAllowed();
+      const banner = $("#cookieBanner");
+      const hasChoice = ["allow", "deny"].includes(getCookie("luminary_storage"));
+      if (banner) banner.classList.toggle("show", !hasChoice);
+      const toggle = $("#storageToggle");
+      if (toggle) {
+        toggle.textContent = allowed ? "Opslag uitzetten" : "Opslag toestaan";
+        toggle.className = allowed ? "danger" : "primary";
+      }
+      const description = $("#storageDescription");
+      if (description) {
+        description.innerHTML = allowed
+          ? 'Lokale opslag staat <span class="storage-state on">aan</span>. Highlights, notities, geladen hoofdstukken en de zoekindex blijven in deze browser bewaard.'
+          : 'Lokale opslag staat <span class="storage-state">uit</span>. Luminary werkt tijdelijk in het geheugen; bij verversen of sluiten verdwijnen nieuwe highlights, notities en cache.';
+      }
+      const indexStatus = $("#indexStatus");
+      if (indexStatus && !allowed) {
+        indexStatus.textContent = `${state.searchIndex.length} verzen in tijdelijke zoekindex`;
+      }
     }
 
     function bookInfo(name = state.book) {
@@ -971,6 +1113,7 @@
     }
 
     async function indexBible() {
+      if (!storageAllowed() && !confirm("Lokale opslag staat uit. De volledige index blijft dan alleen tijdelijk beschikbaar tot je de pagina sluit. Toch doorgaan?")) return;
       if (!confirm("De hele Bijbel indexeren haalt 1189 hoofdstukken op. Dit kan enkele minuten duren. Doorgaan?")) return;
       $("#indexBtn").disabled = true;
       let done = 0;
@@ -1047,7 +1190,7 @@
 
     function clearAll() {
       if (!confirm("Alle Luminary-gegevens in deze browser wissen?")) return;
-      ["book", "chapter", "highlights", "notes", "chapters", "searchIndex"].forEach((key) => store.remove(key));
+      clearStoredStudyData();
       state.highlights = {};
       state.notes = [];
       state.chapters = {};
@@ -1081,8 +1224,12 @@
       if (file) importData(file);
     });
     $("#clearBtn").addEventListener("click", clearAll);
+    $("#allowStorage").addEventListener("click", () => setStorageConsent(true));
+    $("#denyStorage").addEventListener("click", () => setStorageConsent(false));
+    $("#storageToggle").addEventListener("click", () => setStorageConsent(!storageAllowed()));
 
     $("#indexStatus").textContent = `${state.searchIndex.length} verzen in lokale zoekindex`;
+    updateStorageUi();
     renderBooks();
     renderReader();
   </script>
