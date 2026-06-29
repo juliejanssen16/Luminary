@@ -1,0 +1,1090 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Luminary Bijbelstudie</title>
+  <style>
+    :root {
+      --rose: #ca4f7c;
+      --rose-soft: #ffe3ee;
+      --ink: #2c2530;
+      --muted: #746a73;
+      --line: #eadce3;
+      --paper: #fffdfa;
+      --wash: #f8f2eb;
+      --sky: #2d84b8;
+      --sky-soft: #dff2ff;
+      --gold: #b88710;
+      --gold-soft: #fff3bd;
+      --green: #427560;
+      --shadow: 0 18px 48px rgba(72, 45, 58, .12);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: var(--wash);
+    }
+
+    button, input, textarea, select { font: inherit; }
+    button { cursor: pointer; }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      padding: 22px 18px;
+      background: #fff;
+      border-right: 1px solid var(--line);
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      overflow: auto;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 4px 6px 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .mark {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--rose-soft), var(--sky-soft));
+      color: var(--rose);
+      font-weight: 900;
+      font-size: 23px;
+    }
+
+    .brand strong { display: block; font-size: 18px; }
+    .brand span { display: block; color: var(--muted); font-size: 12px; margin-top: 2px; }
+
+    .tabs, .book-list { display: grid; gap: 7px; }
+
+    .tab, .book-btn, .chapter-btn, .icon-btn, .primary, .secondary, .danger {
+      border: 1px solid transparent;
+      border-radius: 8px;
+      min-height: 38px;
+      background: transparent;
+      color: var(--ink);
+    }
+
+    .tab {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 11px;
+      text-align: left;
+    }
+
+    .tab:hover, .tab.active { background: var(--rose-soft); color: var(--rose); }
+
+    .search-panel {
+      display: grid;
+      gap: 9px;
+      padding: 12px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .field {
+      width: 100%;
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 8px;
+      min-height: 40px;
+      padding: 9px 11px;
+      color: var(--ink);
+    }
+
+    .field:focus, textarea:focus {
+      outline: 2px solid rgba(45, 132, 184, .18);
+      border-color: var(--sky);
+    }
+
+    .primary {
+      background: var(--ink);
+      color: #fff;
+      padding: 8px 12px;
+      font-weight: 750;
+    }
+
+    .secondary {
+      background: #fff;
+      border-color: var(--line);
+      padding: 8px 12px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .danger {
+      background: #fff6f6;
+      border-color: #efc6c6;
+      color: #a33b48;
+      padding: 8px 12px;
+      font-weight: 700;
+    }
+
+    .main {
+      min-width: 0;
+      padding: 24px;
+    }
+
+    .hero {
+      position: relative;
+      min-height: 210px;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      background: #eadfd7 url("assets/bible-study-desk.png") center / cover no-repeat;
+      margin-bottom: 22px;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, rgba(255, 253, 250, .96) 0%, rgba(255, 253, 250, .78) 48%, rgba(255, 253, 250, .2) 100%);
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      max-width: 600px;
+      padding: 30px;
+    }
+
+    h1, h2, h3 { margin: 0; letter-spacing: 0; }
+    h1 { font-family: Georgia, "Times New Roman", serif; font-size: 40px; line-height: 1.05; }
+    h2 { font-size: 21px; }
+    h3 { font-size: 15px; }
+    p { line-height: 1.6; }
+
+    .hero p { color: var(--muted); max-width: 52ch; margin: 12px 0 0; }
+
+    .view { display: none; }
+    .view.active { display: block; }
+
+    .reader-grid {
+      display: grid;
+      grid-template-columns: 260px minmax(0, 1fr) 320px;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .panel {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 10px 30px rgba(44, 37, 48, .06);
+    }
+
+    .panel-head {
+      padding: 14px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .panel-body { padding: 14px; }
+
+    .book-scroll {
+      max-height: calc(100vh - 300px);
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .section-label {
+      margin: 16px 4px 6px;
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      font-weight: 850;
+    }
+
+    .book-btn {
+      width: 100%;
+      text-align: left;
+      padding: 8px 10px;
+      color: var(--muted);
+    }
+
+    .book-btn:hover, .book-btn.active {
+      background: var(--sky-soft);
+      color: #17618d;
+      font-weight: 750;
+    }
+
+    .chapter-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .chapter-btn {
+      width: 36px;
+      min-height: 34px;
+      background: var(--wash);
+      color: var(--muted);
+      font-weight: 750;
+    }
+
+    .chapter-btn:hover, .chapter-btn.active {
+      background: var(--ink);
+      color: #fff;
+    }
+
+    .reader-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      padding: 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .tools {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: flex-end;
+    }
+
+    .icon-btn {
+      width: 38px;
+      background: #fff;
+      border-color: var(--line);
+      color: var(--muted);
+      font-weight: 900;
+    }
+
+    .icon-btn.active[data-color="yellow"] { background: var(--gold-soft); color: var(--gold); border-color: #e4c96d; }
+    .icon-btn.active[data-color="pink"] { background: var(--rose-soft); color: var(--rose); border-color: #f1aac5; }
+    .icon-btn.active[data-color="blue"] { background: var(--sky-soft); color: var(--sky); border-color: #9fccea; }
+    .icon-btn.active[data-color="clear"] { background: #f1f1f1; color: #555; }
+
+    .passage {
+      padding: 20px;
+      min-height: 420px;
+    }
+
+    .verse {
+      display: grid;
+      grid-template-columns: 32px minmax(0, 1fr);
+      gap: 10px;
+      margin-bottom: 8px;
+      align-items: start;
+    }
+
+    .verse-num {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 850;
+      padding-top: 8px;
+      text-align: right;
+    }
+
+    .verse-text {
+      border: 0;
+      background: transparent;
+      text-align: left;
+      width: 100%;
+      border-radius: 6px;
+      padding: 6px 8px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 18px;
+      line-height: 1.75;
+      color: var(--ink);
+    }
+
+    .verse-text:hover { background: #f8f3df; }
+    .hl-yellow { background: var(--gold-soft); }
+    .hl-pink { background: var(--rose-soft); }
+    .hl-blue { background: var(--sky-soft); }
+
+    .muted { color: var(--muted); }
+    .small { font-size: 12px; }
+
+    .status {
+      padding: 12px 14px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .note-list, .result-list, .highlight-list {
+      display: grid;
+      gap: 9px;
+    }
+
+    .card-btn {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      padding: 12px;
+      text-align: left;
+      color: var(--ink);
+    }
+
+    .card-btn:hover, .card-btn.active { border-color: var(--rose); background: #fff7fa; }
+    .card-btn strong { display: block; margin-bottom: 4px; }
+    .card-btn span { color: var(--muted); font-size: 13px; line-height: 1.45; }
+
+    .note-editor {
+      display: grid;
+      gap: 12px;
+    }
+
+    textarea.field {
+      min-height: 190px;
+      resize: vertical;
+      line-height: 1.6;
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: 340px minmax(0, 1fr);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .home-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .quick-card {
+      min-height: 150px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 18px;
+      text-align: left;
+      box-shadow: 0 10px 26px rgba(44, 37, 48, .06);
+    }
+
+    .quick-card:hover { border-color: var(--sky); transform: translateY(-1px); }
+    .quick-card .symbol { font-size: 26px; margin-bottom: 12px; }
+    .quick-card p { margin: 6px 0 0; color: var(--muted); }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 20px;
+      transform: translateX(-50%);
+      background: var(--ink);
+      color: #fff;
+      border-radius: 8px;
+      padding: 10px 14px;
+      box-shadow: var(--shadow);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .18s ease;
+      z-index: 20;
+    }
+
+    .toast.show { opacity: 1; }
+
+    @media (max-width: 1180px) {
+      .reader-grid { grid-template-columns: 240px minmax(0, 1fr); }
+      .reader-grid > .panel:last-child { grid-column: 1 / -1; }
+    }
+
+    @media (max-width: 820px) {
+      .app { display: block; }
+      .sidebar {
+        position: static;
+        height: auto;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+      .tabs { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .tab { justify-content: center; padding: 8px; }
+      .tab span:last-child { display: none; }
+      .main { padding: 14px; }
+      .hero-content { padding: 22px; }
+      h1 { font-size: 31px; }
+      .reader-grid, .split, .home-grid { grid-template-columns: 1fr; }
+      .book-scroll { max-height: 320px; }
+      .reader-head { align-items: flex-start; flex-direction: column; }
+      .tools { justify-content: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="mark">L</div>
+        <div>
+          <strong>Luminary</strong>
+          <span>Bijbel lezen, markeren en studeren</span>
+        </div>
+      </div>
+
+      <nav class="tabs" aria-label="Hoofdnavigatie">
+        <button class="tab active" data-view="home"><span>⌂</span><span>Start</span></button>
+        <button class="tab" data-view="reader"><span>□</span><span>Bijbel</span></button>
+        <button class="tab" data-view="notes"><span>✎</span><span>Notities</span></button>
+        <button class="tab" data-view="library"><span>◇</span><span>Mijn studie</span></button>
+      </nav>
+
+      <div class="search-panel">
+        <h3>Zoeken</h3>
+        <input class="field" id="searchInput" type="search" placeholder="Bijv. love, faith, shepherd">
+        <button class="primary" id="searchBtn">Zoek</button>
+        <button class="secondary" id="indexBtn">Hele Bijbel indexeren</button>
+        <div class="small muted" id="indexStatus">Zoekt in geladen hoofdstukken en voorbeeldverzen.</div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <section class="hero">
+        <div class="hero-content">
+          <h1>Lees de Bijbel met ruimte voor aandacht.</h1>
+          <p>Navigeer door alle 66 boeken, markeer verzen in drie kleuren, schrijf notities bij passages en bouw een lokale zoekindex op voor je eigen studie.</p>
+        </div>
+      </section>
+
+      <section class="view active" id="view-home">
+        <div class="home-grid">
+          <button class="quick-card" data-jump="reader">
+            <div class="symbol">□</div>
+            <h2>Bijbel lezen</h2>
+            <p>Open elk boek en hoofdstuk, met KJV-tekst die per hoofdstuk lokaal wordt opgeslagen.</p>
+          </button>
+          <button class="quick-card" data-jump="notes">
+            <div class="symbol">✎</div>
+            <h2>Notities maken</h2>
+            <p>Bewaar reflecties per verwijzing en spring direct terug naar het hoofdstuk.</p>
+          </button>
+          <button class="quick-card" data-jump="library">
+            <div class="symbol">◇</div>
+            <h2>Mijn studie</h2>
+            <p>Bekijk al je highlights, exporteer je gegevens of wis je lokale opslag.</p>
+          </button>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h2>Zoekresultaten</h2>
+            <span class="small muted" id="resultCount">Nog geen zoekopdracht</span>
+          </div>
+          <div class="panel-body">
+            <div class="result-list" id="results">
+              <div class="status">Typ links een zoekwoord. Zonder volledige index zoekt Luminary in hoofdstukken die je al hebt geopend en in een kleine voorbeeldset.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="view-reader">
+        <div class="reader-grid">
+          <div class="panel">
+            <div class="panel-head"><h2>Boeken</h2></div>
+            <div class="panel-body">
+              <input class="field" id="bookFilter" type="search" placeholder="Filter boek">
+              <div class="book-scroll" id="bookList"></div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="reader-head">
+              <div>
+                <h2 id="chapterTitle">Genesis 1</h2>
+                <div class="small muted" id="chapterMeta">KJV</div>
+              </div>
+              <div class="tools" aria-label="Markeerhulpmiddelen">
+                <button class="icon-btn active" data-color="yellow" title="Geel markeren">Y</button>
+                <button class="icon-btn" data-color="pink" title="Roze markeren">P</button>
+                <button class="icon-btn" data-color="blue" title="Blauw markeren">B</button>
+                <button class="icon-btn" data-color="clear" title="Highlight wissen">×</button>
+                <button class="secondary" id="noteFromChapter">Notitie</button>
+              </div>
+            </div>
+            <div class="chapter-row" id="chapterNav"></div>
+            <div class="passage" id="passage">
+              <div class="status">Hoofdstuk laden...</div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">
+              <h2>Hoofdstuknotities</h2>
+              <button class="secondary" id="newNoteSide">Nieuw</button>
+            </div>
+            <div class="panel-body">
+              <div class="note-list" id="chapterNotes"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="view-notes">
+        <div class="split">
+          <div class="panel">
+            <div class="panel-head">
+              <h2>Notities</h2>
+              <button class="primary" id="newNote">Nieuw</button>
+            </div>
+            <div class="panel-body">
+              <div class="note-list" id="noteList"></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h2>Editor</h2></div>
+            <div class="panel-body">
+              <div id="noteEditor" class="note-editor">
+                <div class="status">Selecteer een notitie of maak een nieuwe aan.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="view-library">
+        <div class="split">
+          <div class="panel">
+            <div class="panel-head"><h2>Highlights</h2></div>
+            <div class="panel-body">
+              <div class="highlight-list" id="highlightList"></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h2>Gegevens</h2></div>
+            <div class="panel-body">
+              <p class="muted">Alles wordt lokaal in deze browser opgeslagen: hoofdstukcache, highlights, notities en zoekindex.</p>
+              <div class="actions">
+                <button class="secondary" id="exportBtn">Exporteren</button>
+                <label class="secondary" for="importFile">Importeren</label>
+                <input id="importFile" type="file" accept="application/json" hidden>
+                <button class="danger" id="clearBtn">Alles wissen</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const BOOKS = [
+      { group: "Oude Testament", name: "Genesis", chapters: 50 }, { group: "Oude Testament", name: "Exodus", chapters: 40 },
+      { group: "Oude Testament", name: "Leviticus", chapters: 27 }, { group: "Oude Testament", name: "Numbers", chapters: 36 },
+      { group: "Oude Testament", name: "Deuteronomy", chapters: 34 }, { group: "Oude Testament", name: "Joshua", chapters: 24 },
+      { group: "Oude Testament", name: "Judges", chapters: 21 }, { group: "Oude Testament", name: "Ruth", chapters: 4 },
+      { group: "Oude Testament", name: "1 Samuel", chapters: 31 }, { group: "Oude Testament", name: "2 Samuel", chapters: 24 },
+      { group: "Oude Testament", name: "1 Kings", chapters: 22 }, { group: "Oude Testament", name: "2 Kings", chapters: 25 },
+      { group: "Oude Testament", name: "1 Chronicles", chapters: 29 }, { group: "Oude Testament", name: "2 Chronicles", chapters: 36 },
+      { group: "Oude Testament", name: "Ezra", chapters: 10 }, { group: "Oude Testament", name: "Nehemiah", chapters: 13 },
+      { group: "Oude Testament", name: "Esther", chapters: 10 }, { group: "Oude Testament", name: "Job", chapters: 42 },
+      { group: "Oude Testament", name: "Psalms", chapters: 150 }, { group: "Oude Testament", name: "Proverbs", chapters: 31 },
+      { group: "Oude Testament", name: "Ecclesiastes", chapters: 12 }, { group: "Oude Testament", name: "Song of Solomon", chapters: 8 },
+      { group: "Oude Testament", name: "Isaiah", chapters: 66 }, { group: "Oude Testament", name: "Jeremiah", chapters: 52 },
+      { group: "Oude Testament", name: "Lamentations", chapters: 5 }, { group: "Oude Testament", name: "Ezekiel", chapters: 48 },
+      { group: "Oude Testament", name: "Daniel", chapters: 12 }, { group: "Oude Testament", name: "Hosea", chapters: 14 },
+      { group: "Oude Testament", name: "Joel", chapters: 3 }, { group: "Oude Testament", name: "Amos", chapters: 9 },
+      { group: "Oude Testament", name: "Obadiah", chapters: 1 }, { group: "Oude Testament", name: "Jonah", chapters: 4 },
+      { group: "Oude Testament", name: "Micah", chapters: 7 }, { group: "Oude Testament", name: "Nahum", chapters: 3 },
+      { group: "Oude Testament", name: "Habakkuk", chapters: 3 }, { group: "Oude Testament", name: "Zephaniah", chapters: 3 },
+      { group: "Oude Testament", name: "Haggai", chapters: 2 }, { group: "Oude Testament", name: "Zechariah", chapters: 14 },
+      { group: "Oude Testament", name: "Malachi", chapters: 4 },
+      { group: "Nieuwe Testament", name: "Matthew", chapters: 28 }, { group: "Nieuwe Testament", name: "Mark", chapters: 16 },
+      { group: "Nieuwe Testament", name: "Luke", chapters: 24 }, { group: "Nieuwe Testament", name: "John", chapters: 21 },
+      { group: "Nieuwe Testament", name: "Acts", chapters: 28 }, { group: "Nieuwe Testament", name: "Romans", chapters: 16 },
+      { group: "Nieuwe Testament", name: "1 Corinthians", chapters: 16 }, { group: "Nieuwe Testament", name: "2 Corinthians", chapters: 13 },
+      { group: "Nieuwe Testament", name: "Galatians", chapters: 6 }, { group: "Nieuwe Testament", name: "Ephesians", chapters: 6 },
+      { group: "Nieuwe Testament", name: "Philippians", chapters: 4 }, { group: "Nieuwe Testament", name: "Colossians", chapters: 4 },
+      { group: "Nieuwe Testament", name: "1 Thessalonians", chapters: 5 }, { group: "Nieuwe Testament", name: "2 Thessalonians", chapters: 3 },
+      { group: "Nieuwe Testament", name: "1 Timothy", chapters: 6 }, { group: "Nieuwe Testament", name: "2 Timothy", chapters: 4 },
+      { group: "Nieuwe Testament", name: "Titus", chapters: 3 }, { group: "Nieuwe Testament", name: "Philemon", chapters: 1 },
+      { group: "Nieuwe Testament", name: "Hebrews", chapters: 13 }, { group: "Nieuwe Testament", name: "James", chapters: 5 },
+      { group: "Nieuwe Testament", name: "1 Peter", chapters: 5 }, { group: "Nieuwe Testament", name: "2 Peter", chapters: 3 },
+      { group: "Nieuwe Testament", name: "1 John", chapters: 5 }, { group: "Nieuwe Testament", name: "2 John", chapters: 1 },
+      { group: "Nieuwe Testament", name: "3 John", chapters: 1 }, { group: "Nieuwe Testament", name: "Jude", chapters: 1 },
+      { group: "Nieuwe Testament", name: "Revelation", chapters: 22 }
+    ];
+
+    const SEED_VERSES = [
+      { ref: "Genesis 1:1", book: "Genesis", chapter: 1, verse: 1, text: "In the beginning God created the heaven and the earth." },
+      { ref: "Psalm 23:1", book: "Psalms", chapter: 23, verse: 1, text: "The LORD is my shepherd; I shall not want." },
+      { ref: "Proverbs 3:5", book: "Proverbs", chapter: 3, verse: 5, text: "Trust in the LORD with all thine heart; and lean not unto thine own understanding." },
+      { ref: "John 3:16", book: "John", chapter: 3, verse: 16, text: "For God so loved the world, that he gave his only begotten Son..." },
+      { ref: "Romans 8:28", book: "Romans", chapter: 8, verse: 28, text: "And we know that all things work together for good to them that love God..." }
+    ];
+
+    const store = {
+      get(key, fallback) {
+        try {
+          const raw = localStorage.getItem("luminary_" + key);
+          return raw ? JSON.parse(raw) : fallback;
+        } catch {
+          return fallback;
+        }
+      },
+      set(key, value) {
+        localStorage.setItem("luminary_" + key, JSON.stringify(value));
+      },
+      remove(key) {
+        localStorage.removeItem("luminary_" + key);
+      }
+    };
+
+    let state = {
+      book: store.get("book", "Genesis"),
+      chapter: store.get("chapter", 1),
+      highlightColor: "yellow",
+      highlights: store.get("highlights", {}),
+      notes: store.get("notes", []),
+      selectedNoteId: null,
+      chapters: store.get("chapters", {}),
+      searchIndex: store.get("searchIndex", SEED_VERSES)
+    };
+
+    const $ = (selector) => document.querySelector(selector);
+    const $$ = (selector) => Array.from(document.querySelectorAll(selector));
+
+    function toast(message) {
+      const el = $("#toast");
+      el.textContent = message;
+      el.classList.add("show");
+      setTimeout(() => el.classList.remove("show"), 2200);
+    }
+
+    function saveState() {
+      store.set("book", state.book);
+      store.set("chapter", state.chapter);
+      store.set("highlights", state.highlights);
+      store.set("notes", state.notes);
+      store.set("chapters", state.chapters);
+      store.set("searchIndex", state.searchIndex);
+    }
+
+    function bookInfo(name = state.book) {
+      return BOOKS.find((book) => book.name === name) || BOOKS[0];
+    }
+
+    function chapterKey(book = state.book, chapter = state.chapter) {
+      return `${book}|${chapter}`;
+    }
+
+    function verseKey(book, chapter, verse) {
+      return `${book}|${chapter}|${verse}`;
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;");
+    }
+
+    function showView(view) {
+      $$(".view").forEach((el) => el.classList.toggle("active", el.id === `view-${view}`));
+      $$(".tab").forEach((el) => el.classList.toggle("active", el.dataset.view === view));
+      if (view === "reader") renderReader();
+      if (view === "notes") renderNotes();
+      if (view === "library") renderLibrary();
+    }
+
+    async function fetchChapter(book, chapter) {
+      const key = chapterKey(book, chapter);
+      if (state.chapters[key]) {
+        state.chapters[key] = state.chapters[key].map((verse) => ({
+          ...verse,
+          text: String(verse.text || "").replace(/\s+/g, " ").trim()
+        }));
+        return state.chapters[key];
+      }
+
+      const url = `https://bible-api.com/${encodeURIComponent(book + " " + chapter)}?translation=kjv`;
+      const response = await fetch(url);
+      if (!response.ok) throw new Error("Hoofdstuk kon niet worden opgehaald.");
+      const data = await response.json();
+      const verses = (data.verses || []).map((verse) => ({
+        book,
+        chapter,
+        verse: verse.verse,
+        text: verse.text.replace(/\s+/g, " ").trim()
+      }));
+      state.chapters[key] = verses;
+      mergeIntoIndex(verses);
+      saveState();
+      return verses;
+    }
+
+    function mergeIntoIndex(verses) {
+      const seen = new Set(state.searchIndex.map((item) => item.ref));
+      verses.forEach((verse) => {
+        const ref = `${verse.book} ${verse.chapter}:${verse.verse}`;
+        if (!seen.has(ref)) {
+          state.searchIndex.push({ ref, ...verse });
+          seen.add(ref);
+        }
+      });
+    }
+
+    async function renderReader() {
+      renderBooks();
+      renderChapters();
+      renderChapterNotes();
+      $("#chapterTitle").textContent = `${state.book} ${state.chapter}`;
+      $("#chapterMeta").textContent = "King James Version";
+      $("#passage").innerHTML = '<div class="status">Hoofdstuk laden...</div>';
+
+      try {
+        const verses = await fetchChapter(state.book, state.chapter);
+        $("#passage").innerHTML = verses.map((verse) => {
+          const key = verseKey(verse.book, verse.chapter, verse.verse);
+          const color = state.highlights[key];
+          return `
+            <div class="verse">
+              <div class="verse-num">${verse.verse}</div>
+              <button class="verse-text ${color ? `hl-${color}` : ""}" data-book="${escapeHtml(verse.book)}" data-chapter="${verse.chapter}" data-verse="${verse.verse}">
+                ${escapeHtml(verse.text)}
+              </button>
+            </div>
+          `;
+        }).join("");
+
+        $$(".verse-text").forEach((el) => {
+          el.addEventListener("click", () => toggleHighlight(el));
+          el.addEventListener("dblclick", () => createNote(`${el.dataset.book} ${el.dataset.chapter}:${el.dataset.verse}`));
+        });
+      } catch (error) {
+        $("#passage").innerHTML = `<div class="status">Kon dit hoofdstuk niet laden. Controleer je internetverbinding en probeer opnieuw. (${escapeHtml(error.message)})</div>`;
+      }
+    }
+
+    function renderBooks() {
+      const filter = $("#bookFilter").value.trim().toLowerCase();
+      let currentGroup = "";
+      const html = BOOKS.filter((book) => book.name.toLowerCase().includes(filter)).map((book) => {
+        const label = currentGroup === book.group ? "" : `<div class="section-label">${book.group}</div>`;
+        currentGroup = book.group;
+        return `${label}<button class="book-btn ${book.name === state.book ? "active" : ""}" data-book="${book.name}">${book.name}</button>`;
+      }).join("");
+      $("#bookList").innerHTML = html || '<div class="status">Geen boeken gevonden.</div>';
+      $$(".book-btn").forEach((button) => {
+        button.addEventListener("click", () => {
+          state.book = button.dataset.book;
+          state.chapter = 1;
+          saveState();
+          renderReader();
+        });
+      });
+    }
+
+    function renderChapters() {
+      const book = bookInfo();
+      $("#chapterNav").innerHTML = Array.from({ length: book.chapters }, (_, index) => {
+        const chapter = index + 1;
+        return `<button class="chapter-btn ${chapter === state.chapter ? "active" : ""}" data-chapter="${chapter}">${chapter}</button>`;
+      }).join("");
+      $$(".chapter-btn").forEach((button) => {
+        button.addEventListener("click", () => {
+          state.chapter = Number(button.dataset.chapter);
+          saveState();
+          renderReader();
+        });
+      });
+    }
+
+    function toggleHighlight(el) {
+      const key = verseKey(el.dataset.book, Number(el.dataset.chapter), Number(el.dataset.verse));
+      el.classList.remove("hl-yellow", "hl-pink", "hl-blue");
+      if (state.highlightColor === "clear") {
+        delete state.highlights[key];
+      } else {
+        state.highlights[key] = state.highlightColor;
+        el.classList.add(`hl-${state.highlightColor}`);
+      }
+      saveState();
+      renderChapterNotes();
+    }
+
+    function createNote(ref = `${state.book} ${state.chapter}`) {
+      const note = {
+        id: Date.now(),
+        ref,
+        text: "",
+        created: new Date().toISOString()
+      };
+      state.notes.unshift(note);
+      state.selectedNoteId = note.id;
+      saveState();
+      showView("notes");
+      renderNotes();
+    }
+
+    function renderChapterNotes() {
+      const prefix = `${state.book} ${state.chapter}`;
+      const notes = state.notes.filter((note) => note.ref.startsWith(prefix));
+      $("#chapterNotes").innerHTML = notes.length ? notes.map(noteCard).join("") : '<div class="status">Nog geen notities bij dit hoofdstuk.</div>';
+      $$("#chapterNotes .card-btn").forEach(bindNoteCard);
+    }
+
+    function noteCard(note) {
+      const preview = note.text.trim() || "Lege notitie";
+      return `
+        <button class="card-btn ${state.selectedNoteId === note.id ? "active" : ""}" data-note="${note.id}">
+          <strong>${escapeHtml(note.ref || "Geen verwijzing")}</strong>
+          <span>${escapeHtml(preview.slice(0, 110))}${preview.length > 110 ? "..." : ""}</span>
+        </button>
+      `;
+    }
+
+    function bindNoteCard(button) {
+      button.addEventListener("click", () => {
+        state.selectedNoteId = Number(button.dataset.note);
+        showView("notes");
+        renderNotes();
+      });
+    }
+
+    function renderNotes() {
+      $("#noteList").innerHTML = state.notes.length ? state.notes.map(noteCard).join("") : '<div class="status">Nog geen notities.</div>';
+      $$("#noteList .card-btn").forEach(bindNoteCard);
+
+      const note = state.notes.find((item) => item.id === state.selectedNoteId) || state.notes[0];
+      if (!note) {
+        $("#noteEditor").innerHTML = '<div class="status">Selecteer een notitie of maak een nieuwe aan.</div>';
+        return;
+      }
+      state.selectedNoteId = note.id;
+      $("#noteEditor").innerHTML = `
+        <label>
+          <span class="small muted">Verwijzing</span>
+          <input class="field" id="noteRef" value="${escapeHtml(note.ref)}" placeholder="John 3:16">
+        </label>
+        <label>
+          <span class="small muted">Reflectie</span>
+          <textarea class="field" id="noteText" placeholder="Schrijf je gedachten, vragen of gebed...">${escapeHtml(note.text)}</textarea>
+        </label>
+        <div class="actions">
+          <button class="primary" id="saveNote">Opslaan</button>
+          <button class="secondary" id="openNoteRef">Open verwijzing</button>
+          <button class="danger" id="deleteNote">Verwijderen</button>
+        </div>
+      `;
+      $("#saveNote").addEventListener("click", saveCurrentNote);
+      $("#deleteNote").addEventListener("click", deleteCurrentNote);
+      $("#openNoteRef").addEventListener("click", openCurrentNoteRef);
+    }
+
+    function saveCurrentNote() {
+      const note = state.notes.find((item) => item.id === state.selectedNoteId);
+      if (!note) return;
+      note.ref = $("#noteRef").value.trim();
+      note.text = $("#noteText").value;
+      saveState();
+      renderNotes();
+      toast("Notitie opgeslagen");
+    }
+
+    function deleteCurrentNote() {
+      if (!confirm("Deze notitie verwijderen?")) return;
+      state.notes = state.notes.filter((item) => item.id !== state.selectedNoteId);
+      state.selectedNoteId = state.notes[0]?.id || null;
+      saveState();
+      renderNotes();
+      toast("Notitie verwijderd");
+    }
+
+    function openCurrentNoteRef() {
+      const ref = $("#noteRef").value.trim();
+      const match = ref.match(/^(.+?)\s+(\d+)(?::\d+)?$/);
+      if (!match) {
+        toast("Gebruik bijvoorbeeld John 3:16");
+        return;
+      }
+      const book = BOOKS.find((item) => item.name.toLowerCase() === match[1].trim().toLowerCase());
+      if (!book) {
+        toast("Boek niet gevonden");
+        return;
+      }
+      state.book = book.name;
+      state.chapter = Math.min(Number(match[2]), book.chapters);
+      saveState();
+      showView("reader");
+    }
+
+    function doSearch() {
+      const query = $("#searchInput").value.trim().toLowerCase();
+      if (!query) return;
+      const terms = query.split(/\s+/).filter(Boolean);
+      const results = state.searchIndex
+        .filter((item) => terms.every((term) => `${item.ref} ${item.text}`.toLowerCase().includes(term)))
+        .slice(0, 80);
+      $("#resultCount").textContent = `${results.length} resultaat${results.length === 1 ? "" : "en"}`;
+      $("#results").innerHTML = results.length ? results.map((item) => `
+        <button class="card-btn" data-book="${escapeHtml(item.book)}" data-chapter="${item.chapter}">
+          <strong>${escapeHtml(item.ref)}</strong>
+          <span>${escapeHtml(item.text)}</span>
+        </button>
+      `).join("") : '<div class="status">Geen resultaten in de lokale index. Open meer hoofdstukken of indexeer de hele Bijbel.</div>';
+      $$("#results .card-btn").forEach((button) => {
+        button.addEventListener("click", () => {
+          state.book = button.dataset.book;
+          state.chapter = Number(button.dataset.chapter);
+          saveState();
+          showView("reader");
+        });
+      });
+      showView("home");
+    }
+
+    async function indexBible() {
+      if (!confirm("De hele Bijbel indexeren haalt 1189 hoofdstukken op. Dit kan enkele minuten duren. Doorgaan?")) return;
+      $("#indexBtn").disabled = true;
+      let done = 0;
+      const total = BOOKS.reduce((sum, book) => sum + book.chapters, 0);
+
+      for (const book of BOOKS) {
+        for (let chapter = 1; chapter <= book.chapters; chapter++) {
+          try {
+            await fetchChapter(book.name, chapter);
+          } catch (error) {
+            console.warn(`Indexeren mislukt voor ${book.name} ${chapter}`, error);
+          }
+          done += 1;
+          $("#indexStatus").textContent = `Indexeren: ${done}/${total} hoofdstukken`;
+          if (done % 20 === 0) await new Promise((resolve) => setTimeout(resolve, 120));
+        }
+      }
+
+      $("#indexBtn").disabled = false;
+      $("#indexStatus").textContent = `Volledige index klaar: ${state.searchIndex.length} verzen`;
+      toast("Bijbelindex voltooid");
+      saveState();
+    }
+
+    function renderLibrary() {
+      const entries = Object.entries(state.highlights);
+      $("#highlightList").innerHTML = entries.length ? entries.map(([key, color]) => {
+        const [book, chapter, verse] = key.split("|");
+        return `
+          <button class="card-btn" data-book="${escapeHtml(book)}" data-chapter="${chapter}">
+            <strong>${escapeHtml(book)} ${chapter}:${verse}</strong>
+            <span>${color}</span>
+          </button>
+        `;
+      }).join("") : '<div class="status">Nog geen highlights. Klik in de Bijbel op een vers om te markeren.</div>';
+      $$("#highlightList .card-btn").forEach((button) => {
+        button.addEventListener("click", () => {
+          state.book = button.dataset.book;
+          state.chapter = Number(button.dataset.chapter);
+          saveState();
+          showView("reader");
+        });
+      });
+    }
+
+    function exportData() {
+      const blob = new Blob([JSON.stringify({
+        highlights: state.highlights,
+        notes: state.notes,
+        chapters: state.chapters,
+        searchIndex: state.searchIndex
+      }, null, 2)], { type: "application/json" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "luminary-bijbelstudie.json";
+      link.click();
+      URL.revokeObjectURL(link.href);
+    }
+
+    async function importData(file) {
+      try {
+        const data = JSON.parse(await file.text());
+        state.highlights = data.highlights || {};
+        state.notes = data.notes || [];
+        state.chapters = data.chapters || {};
+        state.searchIndex = data.searchIndex || SEED_VERSES;
+        saveState();
+        renderLibrary();
+        toast("Gegevens geimporteerd");
+      } catch {
+        toast("Importeren mislukt");
+      }
+    }
+
+    function clearAll() {
+      if (!confirm("Alle Luminary-gegevens in deze browser wissen?")) return;
+      ["book", "chapter", "highlights", "notes", "chapters", "searchIndex"].forEach((key) => store.remove(key));
+      state.highlights = {};
+      state.notes = [];
+      state.chapters = {};
+      state.searchIndex = SEED_VERSES.slice();
+      saveState();
+      renderLibrary();
+      renderReader();
+      toast("Gegevens gewist");
+    }
+
+    $$(".tab").forEach((button) => button.addEventListener("click", () => showView(button.dataset.view)));
+    $$("[data-jump]").forEach((button) => button.addEventListener("click", () => showView(button.dataset.jump)));
+    $$(".icon-btn").forEach((button) => {
+      button.addEventListener("click", () => {
+        state.highlightColor = button.dataset.color;
+        $$(".icon-btn").forEach((item) => item.classList.toggle("active", item === button));
+      });
+    });
+    $("#bookFilter").addEventListener("input", renderBooks);
+    $("#searchBtn").addEventListener("click", doSearch);
+    $("#searchInput").addEventListener("keydown", (event) => {
+      if (event.key === "Enter") doSearch();
+    });
+    $("#indexBtn").addEventListener("click", indexBible);
+    $("#newNote").addEventListener("click", () => createNote());
+    $("#newNoteSide").addEventListener("click", () => createNote(`${state.book} ${state.chapter}`));
+    $("#noteFromChapter").addEventListener("click", () => createNote(`${state.book} ${state.chapter}`));
+    $("#exportBtn").addEventListener("click", exportData);
+    $("#importFile").addEventListener("change", (event) => {
+      const file = event.target.files[0];
+      if (file) importData(file);
+    });
+    $("#clearBtn").addEventListener("click", clearAll);
+
+    $("#indexStatus").textContent = `${state.searchIndex.length} verzen in lokale zoekindex`;
+    renderBooks();
+    renderReader();
+  </script>
+</body>
+</html>
