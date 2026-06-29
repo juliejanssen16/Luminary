@@ -8,5 +8,6 @@ notities te maken en lokaal te zoeken.
 Publiceer de root van deze repository met GitHub Pages. De startpagina is
 `index.html`.
 
-De app bewaart highlights, notities, geladen hoofdstukken en de zoekindex lokaal
-in de browser via `localStorage`.
+De app vraagt eerst toestemming voor lokale opslag. Als de gebruiker toestemt,
+bewaart Luminary highlights, notities, geladen hoofdstukken en de zoekindex via
+`localStorage`. Zonder toestemming werkt de app tijdelijk in het geheugen.
