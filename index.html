@@ -5,29 +5,45 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Luminary Bijbelstudie</title>
   <style>
+    @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap");
+
     :root {
-      --rose: #ca4f7c;
-      --rose-soft: #ffe3ee;
-      --ink: #2c2530;
-      --muted: #746a73;
-      --line: #eadce3;
-      --paper: #fffdfa;
-      --wash: #f8f2eb;
-      --sky: #2d84b8;
-      --sky-soft: #dff2ff;
+      --bg1: #fff3fa;
+      --bg2: #ffe7f3;
+      --bg3: #ffd9ec;
+      --surface: rgba(255, 255, 255, 0.72);
+      --surface2: rgba(255, 255, 255, 0.9);
+      --border: rgba(236, 72, 153, 0.14);
+      --ink: #241a22;
+      --muted: rgba(36, 26, 34, 0.65);
+      --rose: #ec4899;
+      --rose-strong: #db2777;
+      --rose-soft: rgba(236, 72, 153, 0.12);
+      --line: rgba(236, 72, 153, 0.14);
+      --paper: rgba(255, 255, 255, 0.58);
+      --wash: #fff3fa;
+      --sky: #7c3aed;
+      --sky-soft: rgba(124, 58, 237, 0.10);
       --gold: #b88710;
-      --gold-soft: #fff3bd;
-      --green: #427560;
-      --shadow: 0 18px 48px rgba(72, 45, 58, .12);
+      --gold-soft: #fff4c4;
+      --green: #1f7a43;
+      --shadow: 0 18px 50px rgba(219, 39, 119, 0.15);
+      --shadow-soft: 0 10px 26px rgba(36, 26, 34, 0.08);
+      --radius: 22px;
     }
 
     * { box-sizing: border-box; }
 
     body {
       margin: 0;
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: "Poppins", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       color: var(--ink);
-      background: var(--wash);
+      background:
+        radial-gradient(1200px 800px at 20% 10%, var(--bg1), transparent 60%),
+        radial-gradient(1200px 800px at 80% 20%, var(--bg2), transparent 60%),
+        linear-gradient(135deg, var(--bg1), var(--bg2), var(--bg3));
+      min-height: 100vh;
+      line-height: 1.6;
     }
 
     button, input, textarea, select { font: inherit; }
@@ -35,29 +51,34 @@
 
     .app {
       min-height: 100vh;
-      display: grid;
-      grid-template-columns: 280px minmax(0, 1fr);
+      display: block;
     }
 
     .sidebar {
       position: sticky;
       top: 0;
-      height: 100vh;
-      padding: 22px 18px;
-      background: #fff;
-      border-right: 1px solid var(--line);
+      z-index: 10;
+      height: auto;
+      padding: 16px 14px;
+      background: rgba(255, 255, 255, 0.6);
+      border-right: 0;
+      border-bottom: 1px solid rgba(236, 72, 153, 0.12);
+      backdrop-filter: blur(14px);
       display: flex;
-      flex-direction: column;
-      gap: 18px;
-      overflow: auto;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      overflow: visible;
+      flex-wrap: wrap;
     }
 
     .brand {
       display: flex;
       align-items: center;
       gap: 12px;
-      padding: 4px 6px 14px;
-      border-bottom: 1px solid var(--line);
+      padding: 0;
+      border-bottom: 0;
     }
 
     .mark {
@@ -65,21 +86,22 @@
       height: 42px;
       display: grid;
       place-items: center;
-      border-radius: 8px;
-      background: linear-gradient(135deg, var(--rose-soft), var(--sky-soft));
-      color: var(--rose);
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--rose) 0%, var(--rose-strong) 100%);
+      color: #fff;
       font-weight: 900;
       font-size: 23px;
+      box-shadow: 0 10px 18px rgba(219, 39, 119, 0.22);
     }
 
     .brand strong { display: block; font-size: 18px; }
     .brand span { display: block; color: var(--muted); font-size: 12px; margin-top: 2px; }
 
-    .tabs, .book-list { display: grid; gap: 7px; }
+    .tabs, .book-list { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
 
     .tab, .book-btn, .chapter-btn, .icon-btn, .primary, .secondary, .danger {
       border: 1px solid transparent;
-      border-radius: 8px;
+      border-radius: 999px;
       min-height: 38px;
       background: transparent;
       color: var(--ink);
@@ -89,25 +111,37 @@
       display: flex;
       align-items: center;
       gap: 10px;
-      padding: 9px 11px;
+      padding: 10px 16px;
       text-align: left;
+      font-weight: 800;
+      border-color: rgba(236, 72, 153, 0.18);
+      background: rgba(255, 255, 255, 0.55);
+      transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
     }
 
-    .tab:hover, .tab.active { background: var(--rose-soft); color: var(--rose); }
+    .tab:hover, .tab.active {
+      transform: translateY(-2px);
+      color: #fff;
+      background: linear-gradient(135deg, var(--rose) 0%, var(--rose-strong) 100%);
+      box-shadow: 0 16px 22px rgba(219, 39, 119, 0.28);
+    }
 
     .search-panel {
       display: grid;
       gap: 9px;
       padding: 12px;
-      background: var(--paper);
+      background: var(--surface);
       border: 1px solid var(--line);
-      border-radius: 8px;
+      border-radius: 18px;
+      box-shadow: var(--shadow-soft);
+      backdrop-filter: blur(10px);
+      width: min(520px, 100%);
     }
 
     .field {
       width: 100%;
       border: 1px solid var(--line);
-      background: #fff;
+      background: rgba(255, 255, 255, 0.84);
       border-radius: 8px;
       min-height: 40px;
       padding: 9px 11px;
@@ -115,64 +149,81 @@
     }
 
     .field:focus, textarea:focus {
-      outline: 2px solid rgba(45, 132, 184, .18);
-      border-color: var(--sky);
+      outline: 0;
+      border-color: rgba(219, 39, 119, 0.48);
+      box-shadow: 0 0 0 4px rgba(236, 72, 153, 0.12);
     }
 
     .primary {
-      background: var(--ink);
+      background: linear-gradient(135deg, var(--rose) 0%, var(--rose-strong) 100%);
       color: #fff;
-      padding: 8px 12px;
-      font-weight: 750;
+      padding: 10px 16px;
+      font-weight: 800;
+      border-color: rgba(236, 72, 153, 0.18);
+      box-shadow: 0 10px 18px rgba(219, 39, 119, 0.22);
+      transition: transform 180ms ease, box-shadow 180ms ease, filter 180ms ease;
     }
 
     .secondary {
-      background: #fff;
-      border-color: var(--line);
-      padding: 8px 12px;
-      color: var(--muted);
-      font-weight: 700;
+      background: rgba(255, 255, 255, 0.9);
+      border-color: rgba(236, 72, 153, 0.18);
+      padding: 10px 16px;
+      color: rgba(36, 26, 34, 0.78);
+      font-weight: 800;
+      transition: transform 180ms ease, background 180ms ease;
     }
 
     .danger {
       background: #fff6f6;
       border-color: #efc6c6;
       color: #a33b48;
-      padding: 8px 12px;
-      font-weight: 700;
+      padding: 10px 16px;
+      font-weight: 800;
+    }
+
+    .primary:hover, .secondary:hover, .danger:hover {
+      transform: translateY(-1px);
+    }
+
+    .primary:hover {
+      box-shadow: 0 16px 22px rgba(219, 39, 119, 0.28);
+      filter: brightness(1.03);
     }
 
     .main {
       min-width: 0;
-      padding: 24px;
+      padding: 24px 18px 48px;
     }
 
     .hero {
       position: relative;
-      min-height: 210px;
-      border-radius: 8px;
+      max-width: 980px;
+      min-height: 300px;
+      border-radius: var(--radius);
       overflow: hidden;
       box-shadow: var(--shadow);
       background: #eadfd7 url("assets/bible-study-desk.png") center / cover no-repeat;
-      margin-bottom: 22px;
+      margin: 22px auto 28px;
+      border: 1px solid var(--border);
     }
 
     .hero::after {
       content: "";
       position: absolute;
       inset: 0;
-      background: linear-gradient(90deg, rgba(255, 253, 250, .96) 0%, rgba(255, 253, 250, .78) 48%, rgba(255, 253, 250, .2) 100%);
+      background: linear-gradient(90deg, rgba(255, 243, 250, .96) 0%, rgba(255, 243, 250, .84) 50%, rgba(255, 243, 250, .22) 100%);
+      backdrop-filter: blur(2px);
     }
 
     .hero-content {
       position: relative;
       z-index: 1;
       max-width: 600px;
-      padding: 30px;
+      padding: 44px 34px;
     }
 
     h1, h2, h3 { margin: 0; letter-spacing: 0; }
-    h1 { font-family: Georgia, "Times New Roman", serif; font-size: 40px; line-height: 1.05; }
+    h1 { font-size: 44px; line-height: 1.05; font-weight: 800; color: var(--rose-strong); }
     h2 { font-size: 21px; }
     h3 { font-size: 15px; }
     p { line-height: 1.6; }
@@ -190,10 +241,11 @@
     }
 
     .panel {
-      background: #fff;
+      background: var(--surface);
       border: 1px solid var(--line);
-      border-radius: 8px;
-      box-shadow: 0 10px 30px rgba(44, 37, 48, .06);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
     }
 
     .panel-head {
@@ -251,8 +303,9 @@
     }
 
     .chapter-btn:hover, .chapter-btn.active {
-      background: var(--ink);
+      background: linear-gradient(135deg, var(--rose) 0%, var(--rose-strong) 100%);
       color: #fff;
+      box-shadow: 0 10px 18px rgba(219, 39, 119, 0.22);
     }
 
     .reader-head {
@@ -273,8 +326,8 @@
 
     .icon-btn {
       width: 38px;
-      background: #fff;
-      border-color: var(--line);
+      background: rgba(255, 255, 255, 0.72);
+      border-color: rgba(236, 72, 153, 0.18);
       color: var(--muted);
       font-weight: 900;
     }
@@ -318,7 +371,7 @@
       color: var(--ink);
     }
 
-    .verse-text:hover { background: #f8f3df; }
+    .verse-text:hover { background: rgba(236, 72, 153, 0.10); }
     .hl-yellow { background: var(--gold-soft); }
     .hl-pink { background: var(--rose-soft); }
     .hl-blue { background: var(--sky-soft); }
@@ -328,7 +381,7 @@
 
     .status {
       padding: 12px 14px;
-      background: var(--paper);
+      background: rgba(255, 255, 255, 0.62);
       border: 1px solid var(--line);
       border-radius: 8px;
       color: var(--muted);
@@ -344,13 +397,17 @@
       width: 100%;
       border: 1px solid var(--line);
       border-radius: 8px;
-      background: #fff;
+      background: rgba(255, 255, 255, 0.78);
       padding: 12px;
       text-align: left;
       color: var(--ink);
     }
 
-    .card-btn:hover, .card-btn.active { border-color: var(--rose); background: #fff7fa; }
+    .card-btn:hover, .card-btn.active {
+      border-color: rgba(236, 72, 153, 0.35);
+      background: rgba(236, 72, 153, 0.10);
+      transform: translateY(-1px);
+    }
     .card-btn strong { display: block; margin-bottom: 4px; }
     .card-btn span { color: var(--muted); font-size: 13px; line-height: 1.45; }
 
@@ -381,16 +438,32 @@
 
     .quick-card {
       min-height: 150px;
-      background: #fff;
+      background: rgba(255, 255, 255, 0.78);
       border: 1px solid var(--line);
-      border-radius: 8px;
+      border-radius: 18px;
       padding: 18px;
       text-align: left;
-      box-shadow: 0 10px 26px rgba(44, 37, 48, .06);
+      box-shadow: var(--shadow-soft);
+      transition: transform 220ms ease, box-shadow 220ms ease;
     }
 
-    .quick-card:hover { border-color: var(--sky); transform: translateY(-1px); }
-    .quick-card .symbol { font-size: 26px; margin-bottom: 12px; }
+    .quick-card:hover {
+      border-color: rgba(236, 72, 153, 0.35);
+      transform: translateY(-4px);
+      box-shadow: 0 18px 40px rgba(36, 26, 34, 0.12);
+    }
+    .quick-card .symbol {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      background: rgba(236, 72, 153, 0.13);
+      color: var(--rose-strong);
+      font-size: 20px;
+      font-weight: 800;
+    }
     .quick-card p { margin: 6px 0 0; color: var(--muted); }
 
     .actions {
@@ -405,7 +478,7 @@
       left: 50%;
       bottom: 20px;
       transform: translateX(-50%);
-      background: var(--ink);
+      background: var(--rose-strong);
       color: #fff;
       border-radius: 8px;
       padding: 10px 14px;
@@ -451,7 +524,7 @@
       min-height: 28px;
       padding: 4px 9px;
       border-radius: 999px;
-      background: var(--wash);
+      background: rgba(236, 72, 153, 0.10);
       color: var(--muted);
       font-size: 12px;
       font-weight: 800;
@@ -471,6 +544,76 @@
       border-top: 1px solid var(--line);
       border-bottom: 1px solid var(--line);
       margin: 14px 0;
+    }
+
+    .site-footer {
+      position: relative;
+      margin-top: 36px;
+      padding: 46px 18px 24px;
+      background: #090a0d;
+      color: rgba(255, 255, 255, 0.72);
+      text-align: left;
+      overflow: hidden;
+    }
+
+    .footer-inner {
+      max-width: 1020px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(220px, .8fr);
+      gap: 34px;
+      align-items: start;
+    }
+
+    .site-footer h3 {
+      color: rgba(255, 255, 255, 0.92);
+      margin: 0 0 10px;
+      font-size: 1rem;
+    }
+
+    .site-footer p {
+      max-width: 540px;
+      margin: 0;
+      color: rgba(255, 255, 255, 0.58);
+      font-size: .95rem;
+      line-height: 1.75;
+    }
+
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    .footer-links a,
+    .footer-links button {
+      min-height: 36px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      color: rgba(255, 255, 255, 0.82);
+      text-decoration: none;
+      font-family: "Poppins", sans-serif;
+      font-size: .85rem;
+      font-weight: 800;
+      padding: 0 12px;
+      display: inline-flex;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .footer-brand-word {
+      max-width: 1020px;
+      margin: 26px auto 0;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      color: transparent;
+      -webkit-text-stroke: 1px rgba(255, 255, 255, 0.42);
+      font-size: clamp(2.8rem, 8vw, 7rem);
+      font-weight: 800;
+      line-height: .95;
+      white-space: nowrap;
     }
 
     @media (max-width: 1180px) {
@@ -498,6 +641,15 @@
       .tools { justify-content: flex-start; }
       .cookie-banner {
         grid-template-columns: 1fr;
+      }
+      .footer-inner {
+        grid-template-columns: 1fr;
+      }
+      .footer-links {
+        justify-content: flex-start;
+      }
+      .footer-brand-word {
+        white-space: normal;
       }
     }
   </style>
@@ -664,6 +816,20 @@
       </section>
     </main>
   </div>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div>
+        <h3>Luminary Bible Study</h3>
+        <p>Een rustige Bijbelstudie-ruimte gemaakt in dezelfde zachte portfolio-stijl van Julie Janssen: vriendelijk, leesbaar en gebouwd met aandacht.</p>
+      </div>
+      <div class="footer-links">
+        <a href="https://juliejanssen.nl/">Portfolio</a>
+        <button type="button" id="footerStorageSettings">Cookie settings</button>
+      </div>
+    </div>
+    <div class="footer-brand-word" aria-hidden="true">LUMINARY</div>
+  </footer>
 
   <div class="toast" id="toast"></div>
   <div class="cookie-banner" id="cookieBanner" role="dialog" aria-live="polite" aria-label="Lokale opslag toestemming">
@@ -1227,6 +1393,10 @@
     $("#allowStorage").addEventListener("click", () => setStorageConsent(true));
     $("#denyStorage").addEventListener("click", () => setStorageConsent(false));
     $("#storageToggle").addEventListener("click", () => setStorageConsent(!storageAllowed()));
+    $("#footerStorageSettings").addEventListener("click", () => {
+      const banner = $("#cookieBanner");
+      if (banner) banner.classList.add("show");
+    });
 
     $("#indexStatus").textContent = `${state.searchIndex.length} verzen in lokale zoekindex`;
     updateStorageUi();

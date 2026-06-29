@@ -3,6 +3,9 @@
 Een statische Bijbelstudie-website om de Bijbel te lezen, verzen te highlighten,
 notities te maken en lokaal te zoeken.
 
+De visuele stijl sluit aan op de portfolio-website van Julie Janssen:
+zachte roze gradients, Poppins-typografie, glass cards en bubbly knoppen.
+
 ## Publiceren met GitHub Pages
 
 Publiceer de root van deze repository met GitHub Pages. De startpagina is
