@@ -417,6 +417,13 @@
       line-height: 1.5;
     }
 
+    .empty-state {
+      padding: 16px 0 4px;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: .96rem;
+    }
+
     .note-list, .result-list, .highlight-list {
       display: grid;
       gap: 9px;
@@ -752,7 +759,7 @@
           </div>
           <div class="panel-body">
             <div class="result-list" id="results">
-              <div class="status">Typ links een zoekwoord. Zonder volledige index zoekt Luminary in hoofdstukken die je al hebt geopend en in een kleine voorbeeldset.</div>
+              <div class="empty-state">Gebruik de zoekbalk bovenaan om verzen te vinden. Zonder volledige index zoekt Luminary in hoofdstukken die je al hebt geopend en in een kleine voorbeeldset.</div>
             </div>
           </div>
         </div>
@@ -1303,7 +1310,7 @@
           <strong>${escapeHtml(item.ref)}</strong>
           <span>${escapeHtml(item.text)}</span>
         </button>
-      `).join("") : '<div class="status">Geen resultaten in de lokale index. Open meer hoofdstukken of indexeer de hele Bijbel.</div>';
+      `).join("") : '<div class="empty-state">Geen resultaten in de lokale index. Open meer hoofdstukken of indexeer de hele Bijbel.</div>';
       $$("#results .card-btn").forEach((button) => {
         button.addEventListener("click", () => {
           state.book = button.dataset.book;
