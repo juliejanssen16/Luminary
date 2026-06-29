@@ -128,7 +128,7 @@
 
     .search-panel {
       display: grid;
-      grid-template-columns: minmax(190px, 1fr) 104px 170px;
+      grid-template-columns: minmax(230px, 1fr) 104px auto;
       align-items: center;
       gap: 8px;
       padding: 10px;
@@ -160,6 +160,19 @@
       padding-left: 12px;
       padding-right: 12px;
       white-space: nowrap;
+    }
+
+    .search-panel .secondary {
+      min-height: 38px;
+      background: rgba(236, 72, 153, 0.08);
+      color: rgba(36, 26, 34, 0.68);
+      box-shadow: none;
+      font-size: .88rem;
+    }
+
+    .search-panel .secondary:hover {
+      background: rgba(236, 72, 153, 0.14);
+      color: var(--rose-strong);
     }
 
     #indexStatus {
@@ -720,8 +733,8 @@
         <h3>Zoeken</h3>
         <input class="field" id="searchInput" type="search" placeholder="Bijv. love, faith, shepherd">
         <button class="primary" id="searchBtn">Zoek</button>
-        <button class="secondary" id="indexBtn">Hele Bijbel indexeren</button>
-        <div class="small muted" id="indexStatus">Zoekt in geladen hoofdstukken en voorbeeldverzen.</div>
+        <button class="secondary" id="indexBtn" title="Laadt alle hoofdstukken eenmalig in, zodat zoeken door de hele Bijbel werkt.">Volledige zoekindex laden</button>
+        <div class="small muted" id="indexStatus">Zoekt nu in geopende hoofdstukken en voorbeeldverzen.</div>
       </div>
     </aside>
 
@@ -1323,8 +1336,8 @@
     }
 
     async function indexBible() {
-      if (!storageAllowed() && !confirm("Lokale opslag staat uit. De volledige index blijft dan alleen tijdelijk beschikbaar tot je de pagina sluit. Toch doorgaan?")) return;
-      if (!confirm("De hele Bijbel indexeren haalt 1189 hoofdstukken op. Dit kan enkele minuten duren. Doorgaan?")) return;
+      if (!storageAllowed() && !confirm("Lokale opslag staat uit. De volledige zoekindex blijft dan alleen tijdelijk beschikbaar tot je de pagina sluit. Toch doorgaan?")) return;
+      if (!confirm("Volledige zoekindex laden? Luminary haalt dan alle 1189 hoofdstukken op, zodat zoeken door de hele Bijbel werkt. Dit kan enkele minuten duren.")) return;
       $("#indexBtn").disabled = true;
       let done = 0;
       const total = BOOKS.reduce((sum, book) => sum + book.chapters, 0);
