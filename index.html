@@ -128,7 +128,7 @@
 
     .search-panel {
       display: grid;
-      grid-template-columns: minmax(230px, 1fr) 104px auto;
+      grid-template-columns: minmax(220px, 1fr) 94px 138px;
       align-items: center;
       gap: 8px;
       padding: 10px;
@@ -160,14 +160,17 @@
       padding-left: 12px;
       padding-right: 12px;
       white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .search-panel .secondary {
       min-height: 38px;
-      background: rgba(236, 72, 153, 0.08);
-      color: rgba(36, 26, 34, 0.68);
+      background: rgba(255, 255, 255, 0.7);
+      color: rgba(36, 26, 34, 0.74);
       box-shadow: none;
-      font-size: .88rem;
+      font-size: .82rem;
+      border-color: rgba(236, 72, 153, 0.2);
     }
 
     .search-panel .secondary:hover {
@@ -414,9 +417,43 @@
     }
 
     .verse-text:hover { background: rgba(236, 72, 153, 0.10); }
+    .word {
+      display: inline;
+      border: 0;
+      border-radius: 4px;
+      padding: 1px 2px;
+      margin: 0 1px;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      line-height: inherit;
+      text-align: inherit;
+      cursor: pointer;
+    }
+    .word:hover {
+      background: rgba(236, 72, 153, 0.12);
+    }
     .hl-yellow { background: var(--gold-soft); }
     .hl-pink { background: var(--rose-soft); }
     .hl-blue { background: var(--sky-soft); }
+    .highlight-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items: stretch;
+    }
+    .highlight-row .card-btn {
+      min-width: 0;
+    }
+    .mini-danger {
+      width: 42px;
+      min-height: 42px;
+      border: 1px solid #efc6c6;
+      border-radius: 8px;
+      background: #fff6f6;
+      color: #a33b48;
+      font-weight: 900;
+    }
 
     .muted { color: var(--muted); }
     .small { font-size: 12px; }
@@ -733,7 +770,7 @@
         <h3>Zoeken</h3>
         <input class="field" id="searchInput" type="search" placeholder="Bijv. love, faith, shepherd">
         <button class="primary" id="searchBtn">Zoek</button>
-        <button class="secondary" id="indexBtn" title="Laadt alle hoofdstukken eenmalig in, zodat zoeken door de hele Bijbel werkt.">Volledige zoekindex laden</button>
+        <button class="secondary" id="indexBtn" aria-label="Volledige zoekindex laden" title="Laadt alle hoofdstukken eenmalig in, zodat zoeken door de hele Bijbel werkt.">Index laden</button>
         <div class="small muted" id="indexStatus">Zoekt nu in geopende hoofdstukken en voorbeeldverzen.</div>
       </div>
     </aside>
@@ -742,7 +779,7 @@
       <section class="hero">
         <div class="hero-content">
           <h1>Lees de Bijbel met ruimte voor aandacht.</h1>
-          <p>Navigeer door alle 66 boeken, markeer verzen in drie kleuren, schrijf notities bij passages en bouw een lokale zoekindex op voor je eigen studie.</p>
+          <p>Navigeer door alle 66 boeken, markeer woorden in drie kleuren, schrijf notities bij passages en bouw een lokale zoekindex op voor je eigen studie.</p>
         </div>
       </section>
 
@@ -1072,12 +1109,36 @@
       return `${book}|${chapter}|${verse}`;
     }
 
+    function wordKey(book, chapter, verse, wordIndex) {
+      return `${verseKey(book, chapter, verse)}|${wordIndex}`;
+    }
+
+    function highlightEntryColor(entry) {
+      return typeof entry === "string" ? entry : entry?.color;
+    }
+
+    function highlightEntryWord(entry) {
+      return typeof entry === "string" ? "" : entry?.word || "";
+    }
+
     function escapeHtml(value) {
       return String(value)
         .replaceAll("&", "&amp;")
         .replaceAll("<", "&lt;")
         .replaceAll(">", "&gt;")
         .replaceAll('"', "&quot;");
+    }
+
+    function renderVerseWords(verse) {
+      let wordIndex = 0;
+      const legacyColor = highlightEntryColor(state.highlights[verseKey(verse.book, verse.chapter, verse.verse)]);
+      return String(verse.text || "").split(/(\s+)/).map((part) => {
+        if (/^\s+$/.test(part)) return escapeHtml(part);
+        const currentIndex = wordIndex++;
+        const key = wordKey(verse.book, verse.chapter, verse.verse, currentIndex);
+        const color = highlightEntryColor(state.highlights[key]) || legacyColor;
+        return `<button class="word ${color ? `hl-${color}` : ""}" data-book="${escapeHtml(verse.book)}" data-chapter="${verse.chapter}" data-verse="${verse.verse}" data-word-index="${currentIndex}" data-word="${escapeHtml(part)}">${escapeHtml(part)}</button>`;
+      }).join("");
     }
 
     function showView(view) {
@@ -1136,20 +1197,20 @@
       try {
         const verses = await fetchChapter(state.book, state.chapter);
         $("#passage").innerHTML = verses.map((verse) => {
-          const key = verseKey(verse.book, verse.chapter, verse.verse);
-          const color = state.highlights[key];
           return `
             <div class="verse">
               <div class="verse-num">${verse.verse}</div>
-              <button class="verse-text ${color ? `hl-${color}` : ""}" data-book="${escapeHtml(verse.book)}" data-chapter="${verse.chapter}" data-verse="${verse.verse}">
-                ${escapeHtml(verse.text)}
-              </button>
+              <div class="verse-text" data-book="${escapeHtml(verse.book)}" data-chapter="${verse.chapter}" data-verse="${verse.verse}">
+                ${renderVerseWords(verse)}
+              </div>
             </div>
           `;
         }).join("");
 
+        $$(".word").forEach((el) => {
+          el.addEventListener("click", () => toggleWordHighlight(el));
+        });
         $$(".verse-text").forEach((el) => {
-          el.addEventListener("click", () => toggleHighlight(el));
           el.addEventListener("dblclick", () => createNote(`${el.dataset.book} ${el.dataset.chapter}:${el.dataset.verse}`));
         });
       } catch (error) {
@@ -1191,13 +1252,26 @@
       });
     }
 
-    function toggleHighlight(el) {
-      const key = verseKey(el.dataset.book, Number(el.dataset.chapter), Number(el.dataset.verse));
+    function toggleWordHighlight(el) {
+      const legacyKey = verseKey(el.dataset.book, Number(el.dataset.chapter), Number(el.dataset.verse));
+      const key = wordKey(el.dataset.book, Number(el.dataset.chapter), Number(el.dataset.verse), Number(el.dataset.wordIndex));
       el.classList.remove("hl-yellow", "hl-pink", "hl-blue");
       if (state.highlightColor === "clear") {
         delete state.highlights[key];
+        delete state.highlights[legacyKey];
+        toast("Highlight verwijderd");
       } else {
-        state.highlights[key] = state.highlightColor;
+        delete state.highlights[legacyKey];
+        state.highlights[key] = {
+          color: state.highlightColor,
+          word: el.dataset.word,
+          ref: `${el.dataset.book} ${el.dataset.chapter}:${el.dataset.verse}`,
+          book: el.dataset.book,
+          chapter: Number(el.dataset.chapter),
+          verse: Number(el.dataset.verse),
+          wordIndex: Number(el.dataset.wordIndex),
+          created: new Date().toISOString()
+        };
         el.classList.add(`hl-${state.highlightColor}`);
       }
       saveState();
@@ -1363,21 +1437,36 @@
 
     function renderLibrary() {
       const entries = Object.entries(state.highlights);
-      $("#highlightList").innerHTML = entries.length ? entries.map(([key, color]) => {
-        const [book, chapter, verse] = key.split("|");
+      $("#highlightList").innerHTML = entries.length ? entries.map(([key, entry]) => {
+        const [book, chapter, verse, wordIndex] = key.split("|");
+        const color = highlightEntryColor(entry);
+        const word = highlightEntryWord(entry);
+        const label = wordIndex ? `"${word || "Woord"}"` : "Oude versmarkering";
         return `
-          <button class="card-btn" data-book="${escapeHtml(book)}" data-chapter="${chapter}">
-            <strong>${escapeHtml(book)} ${chapter}:${verse}</strong>
-            <span>${color}</span>
-          </button>
+          <div class="highlight-row">
+            <button class="card-btn" data-book="${escapeHtml(book)}" data-chapter="${chapter}">
+              <strong>${escapeHtml(label)} · ${escapeHtml(book)} ${chapter}:${verse}</strong>
+              <span>${escapeHtml(color || "highlight")}</span>
+            </button>
+            <button class="mini-danger" data-delete-highlight="${escapeHtml(key)}" title="Highlight verwijderen" aria-label="Highlight verwijderen">×</button>
+          </div>
         `;
-      }).join("") : '<div class="status">Nog geen highlights. Klik in de Bijbel op een vers om te markeren.</div>';
+      }).join("") : '<div class="status">Nog geen highlights. Klik in de Bijbel op een woord om te markeren.</div>';
       $$("#highlightList .card-btn").forEach((button) => {
         button.addEventListener("click", () => {
           state.book = button.dataset.book;
           state.chapter = Number(button.dataset.chapter);
           saveState();
           showView("reader");
+        });
+      });
+      $$("[data-delete-highlight]").forEach((button) => {
+        button.addEventListener("click", () => {
+          delete state.highlights[button.dataset.deleteHighlight];
+          saveState();
+          renderLibrary();
+          renderReader();
+          toast("Highlight verwijderd");
         });
       });
     }
