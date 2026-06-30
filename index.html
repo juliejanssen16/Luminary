@@ -88,16 +88,36 @@
     }
 
     .mark {
+      position: relative;
       width: 42px;
       height: 42px;
       display: grid;
       place-items: center;
       border-radius: 999px;
       background: linear-gradient(135deg, var(--rose) 0%, var(--rose-strong) 100%);
-      color: #fff;
-      font-weight: 900;
-      font-size: 23px;
       box-shadow: 0 10px 18px rgba(219, 39, 119, 0.22);
+    }
+
+    .mark::before,
+    .mark::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      border-radius: 999px;
+      background: #fff;
+      transform: translate(-50%, -50%);
+    }
+
+    .mark::before {
+      width: 5px;
+      height: 23px;
+    }
+
+    .mark::after {
+      width: 17px;
+      height: 5px;
+      top: 46%;
     }
 
     .brand strong { display: block; font-size: 18px; }
@@ -988,7 +1008,7 @@
   <div class="app">
     <aside class="sidebar">
       <div class="brand">
-        <div class="mark">L</div>
+        <div class="mark" aria-label="Luminary cross"></div>
         <div>
           <strong>Luminary</strong>
           <span>Bijbel lezen, markeren en studeren</span>
